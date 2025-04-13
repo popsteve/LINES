@@ -26,7 +26,7 @@ func _ready():
 func _process(delta):
 	if is_moving and next_station != null:
 		move_along_path(delta)
-	update()
+	queue_redraw()
 
 func _draw():
 	# 绘制列车

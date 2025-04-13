@@ -37,7 +37,7 @@ func _process(delta):
 			emit_signal("game_over")
 	
 	# 其他更新逻辑
-	update()
+	queue_redraw()
 
 func _draw():
 	# 绘制车站形状

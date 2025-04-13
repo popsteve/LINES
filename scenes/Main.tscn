@@ -1,20 +1,15 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://pdcp4clj24mn"]
 
-[ext_resource path="res://scripts/Main.gd" type="Script" id=1]
+[ext_resource type="Script" uid="uid://c1mwp56bveixj" path="res://scripts/Main.gd" id="1"]
 
 [node name="Main" type="Node2D"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = 1024.0
-margin_bottom = 600.0
-color = Color( 0.12549, 0.12549, 0.12549, 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+color = Color(0.12549, 0.12549, 0.12549, 1)
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2( 512, 300 )
-current = true 
+position = Vector2(512, 300)

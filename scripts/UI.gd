@@ -18,11 +18,12 @@ signal train_added_to_line(line_index)
 signal pause_toggled
 
 func _ready():
-	# 初始化UI元素
-	initialize_ui_elements()
+	# Initialize UI elements AFTER game_manager is set
+	# initialize_ui_elements() - Removed from here
 	
-	# 连接信号
-	connect_signals()
+	# Connect signals AFTER game_manager is set
+	# connect_signals() - Removed from here
+	pass # Add pass to avoid empty function error
 
 # 初始化UI元素
 func initialize_ui_elements():
@@ -32,12 +33,16 @@ func initialize_ui_elements():
 	top_panel.set_size(Vector2(0, 50))
 	add_child(top_panel)
 	
+	# Create MarginContainer for top panel content
+	var top_margin_container = MarginContainer.new()
+	top_margin_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	top_margin_container.add_theme_constant_override("margin_top", 5)
+	top_margin_container.add_theme_constant_override("margin_left", 10)
+	top_margin_container.add_theme_constant_override("margin_right", 10)
+	top_panel.add_child(top_margin_container)
+	
 	var hbox = HBoxContainer.new()
-	hbox.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	hbox.set_margin(MARGIN_TOP, 5)
-	hbox.set_margin(MARGIN_LEFT, 10)
-	hbox.set_margin(MARGIN_RIGHT, 10)
-	top_panel.add_child(hbox)
+	top_margin_container.add_child(hbox)
 	
 	# 创建周数标签
 	week_label = Label.new()
@@ -82,13 +87,17 @@ func initialize_ui_elements():
 	bottom_panel.set_size(Vector2(0, 80))
 	add_child(bottom_panel)
 	
+	# Create MarginContainer for bottom panel content
+	var bottom_margin_container = MarginContainer.new()
+	bottom_margin_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bottom_margin_container.add_theme_constant_override("margin_bottom", 10)
+	bottom_margin_container.add_theme_constant_override("margin_left", 10)
+	bottom_margin_container.add_theme_constant_override("margin_right", 10)
+	bottom_panel.add_child(bottom_margin_container)
+	
 	var bottom_hbox = HBoxContainer.new()
-	bottom_hbox.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom_hbox.set_margin(MARGIN_BOTTOM, -10)
-	bottom_hbox.set_margin(MARGIN_LEFT, 10)
-	bottom_hbox.set_margin(MARGIN_RIGHT, 10)
 	bottom_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	bottom_panel.add_child(bottom_hbox)
+	bottom_margin_container.add_child(bottom_hbox)
 	
 	# 创建线路颜色选择按钮
 	for i in range(7):  # 7种颜色
@@ -118,35 +127,41 @@ func initialize_ui_elements():
 	vbox.add_child(restart_button)
 	
 	# 连接重新开始按钮信号
-	restart_button.connect("pressed", self, "_on_restart_button_pressed")
+	restart_button.connect("pressed", Callable(self, "_on_restart_button_pressed"))
 
 # 创建颜色选择按钮
 func create_color_button(color_index: int) -> Button:
 	var button = Button.new()
-	button.rect_min_size = Vector2(50, 50)
+	button.custom_minimum_size = Vector2(50, 50)
 	
 	# 设置按钮颜色
 	var style_box = StyleBoxFlat.new()
 	style_box.bg_color = game_manager.line_colors[color_index]
-	button.add_stylebox_override("normal", style_box)
+	button.add_theme_stylebox_override("normal", style_box)
 	
 	# 连接按钮点击信号
-	button.connect("pressed", self, "_on_color_button_pressed", [color_index])
+	button.connect("pressed", Callable(self, "_on_color_button_pressed").bind(color_index))
 	
 	return button
 
 # 连接信号
 func connect_signals():
-	pause_button.connect("pressed", self, "_on_pause_button_pressed")
+	pause_button.connect("pressed", Callable(self, "_on_pause_button_pressed"))
 	
 	if game_manager:
-		game_manager.connect("week_changed", self, "_on_week_changed")
-		game_manager.connect("game_state_changed", self, "_on_game_state_changed")
-		game_manager.connect("game_over", self, "_on_game_over")
+		game_manager.connect("week_changed", Callable(self, "_on_week_changed"))
+		game_manager.connect("game_state_changed", Callable(self, "_on_game_state_changed"))
+		game_manager.connect("game_over", Callable(self, "_on_game_over"))
 
 # 设置游戏管理器引用
 func set_game_manager(manager: GameManager):
 	game_manager = manager
+	if game_manager == null:
+		printerr("GameManager is null in set_game_manager!")
+		return
+		
+	# Now that game_manager is set, initialize UI elements and connect signals
+	initialize_ui_elements()
 	connect_signals()
 	update_ui()
 

@@ -23,7 +23,7 @@ func _ready():
 	pass
 
 func _process(_delta):
-	update()
+	queue_redraw()
 
 func _draw():
 	# 如果线路有至少两个车站，绘制线路
