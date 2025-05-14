@@ -1,6 +1,9 @@
 extends Node2D
 class_name Station
 
+# Signal declarations
+signal game_over
+
 # 车站形状类型（如方形、圆形、三角形等）
 enum ShapeType {CIRCLE, SQUARE, TRIANGLE, DIAMOND, STAR, PENTAGON, HEXAGON}
 

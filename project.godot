@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="Mini Metro Clone"
-run/main_scene="res://scenes/Main.tscn"
-config/features=PackedStringArray("4.4")
-config/icon="res://assets/images/icon.png"
+config/name="LINES"
+run/main_scene="res://MapGridScene.tscn"
+config/features=PackedStringArray("4.4", "Forward Plus")
+config/icon="res://icon.svg"
 
 [display]
 

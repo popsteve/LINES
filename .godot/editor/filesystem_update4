@@ -1,4 +1,2 @@
 res://default_env.tres
 res://scenes/Main.tscn
-res://scripts/UI.gd
-res://scripts/Main.gd
