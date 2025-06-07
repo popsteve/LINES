@@ -11,7 +11,16 @@ func _draw():
 	var hex_s = map_grid_node.hex_size
 	var draw_off = map_grid_node.draw_offset
 	
-	var draw_radius = mg.map_radius + 1
+	# Calculate range based on screen dimensions to ensure full coverage
+	var viewport_size = map_grid_node.get_viewport_rect().size
+	var margin = map_grid_node.screen_margin
+	
+	# Calculate how many hexes we need to cover the screen
+	# Hex spacing: horizontal = sqrt(3) * hex_size, vertical = 1.5 * hex_size
+	var horizontal_range = int((viewport_size.x + 2 * margin) / (sqrt(3.0) * hex_s)) + 2
+	var vertical_range = int((viewport_size.y + 2 * margin) / (1.5 * hex_s)) + 2
+	var draw_radius = max(horizontal_range, vertical_range)
+	
 	for q in range(-draw_radius, draw_radius + 1):
 		for r in range(-draw_radius, draw_radius + 1):
 			if mg.is_within_bounds(q, r):
