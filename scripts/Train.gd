@@ -12,6 +12,10 @@ var speed: float = 100.0  # 像素/秒
 var is_moving: bool = false
 var path: Array = []
 var path_index: int = 0
+var wait_timer: float = 0.0
+var is_waiting: bool = false
+var wait_duration: float = 1.0
+var previous_station: Station = null
 
 # 视觉表现
 var train_color: Color = Color.WHITE
@@ -24,9 +28,18 @@ func _ready():
 	pass
 
 func _process(delta):
-	if is_moving and next_station != null:
+	if is_waiting:
+		wait_timer -= delta
+		if wait_timer <= 0:
+			is_waiting = false
+			# 等待结束，乘客上车
+			load_passengers_at_station()
+
+			# 决定下一站并出发
+			set_next_station(decide_next_station())
+
+	elif is_moving and next_station != null:
 		move_along_path(delta)
-	queue_redraw()
 
 func _draw():
 	# 绘制列车
@@ -99,45 +112,56 @@ func move_along_path(delta):
 
 # 到达车站
 func arrive_at_station(station):
+	previous_station = current_station # Store where we came from
 	set_current_station(station)
 	
-	# 处理乘客上下车
-	handle_passengers_at_station()
+	# 乘客先下车
+	unload_passengers_at_station()
 	
-	# 如果还有下一站，继续移动
-	if should_continue_to_next_station():
-		set_next_station(decide_next_station())
+	# 无论如何都等待一段时间（模拟上下车时间）
+	is_waiting = true
+	wait_timer = wait_duration
 
-# 处理列车到站时的乘客上下车
-func handle_passengers_at_station():
-	# 乘客下车
+# 处理列车到站时的乘客下车
+func unload_passengers_at_station():
 	var passengers_to_remove = []
+	var passengers_changed = false
 	
 	for i in range(passengers.size()):
 		var passenger_type = passengers[i]
 		if passenger_type == current_station.shape_type:
 			passengers_to_remove.append(i)
 	
-	# 从后向前移除，避免索引问题
+	if passengers_to_remove.size() > 0:
+		passengers_changed = true
+
+	# 从后向前移除
 	for i in range(passengers_to_remove.size() - 1, -1, -1):
 		passengers.remove_at(passengers_to_remove[i])
+
+	if passengers_changed:
+		queue_redraw()
+
+# 处理列车到站时的乘客上车
+func load_passengers_at_station():
+	var passengers_changed = false
 	
 	# 乘客上车
 	for passenger_type in current_station.passengers.duplicate():
 		if passengers.size() < max_passengers:
 			current_station.remove_passenger(passenger_type)
 			passengers.append(passenger_type)
+			passengers_changed = true
 		else:
 			break
 
-# 判断是否应该继续前往下一站
+	if passengers_changed:
+		queue_redraw()
+
+# 此函数现在主要用于判断是否因其他原因停留（暂时保留逻辑结构，但已被wait流程取代）
+# 但由于现在是先等待再上车再出发，该函数可以在上车后决定是否立即出发（通常是的）
 func should_continue_to_next_station():
-	# 如果还有空位且当前站还有乘客，等待一段时间
-	if passengers.size() < max_passengers and current_station.passengers.size() > 0:
-		# 在实际实现中可以添加一个计时器
-		return false
-	else:
-		return true
+	return true
 
 # 决定下一个目标车站
 func decide_next_station():
@@ -148,8 +172,17 @@ func decide_next_station():
 	elif adjacent_stations.size() == 1:
 		return adjacent_stations[0]
 	else:
-		# 简单策略：如果有乘客要去某个方向的站，选择那个方向
-		# 否则，交替选择方向
+		# 尝试保持方向
+		if previous_station != null:
+			# Find the station that is NOT the previous one
+			for station in adjacent_stations:
+				if station != previous_station:
+					return station
+
+		# Fallback to random if previous station not found (e.g. just spawned or end of line)
+		# Or if end of line (only 1 neighbor) - handled above.
+		# If we are at a hub with multiple connections (Mini Metro usually lines don't branch like trees,
+		# but lines are sequences. adjacent_stations should be at most 2 for a line).
+		# Line.gd: get_adjacent_stations uses index-1 and index+1. So max 2.
 		
-		# 此处使用简单逻辑，随机选择
-		return adjacent_stations[randi() % adjacent_stations.size()] 
+		return adjacent_stations[randi() % adjacent_stations.size()]
