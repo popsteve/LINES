@@ -23,7 +23,7 @@ func _ready():
 	pass
 
 func _process(_delta):
-	queue_redraw()
+	pass
 
 func _draw():
 	# 如果线路有至少两个车站，绘制线路
@@ -42,6 +42,7 @@ func add_station(station):
 		stations.append(station)
 		station.connect_line(self)
 		recalculate_path()
+		queue_redraw()
 		return true
 	return false
 
@@ -52,6 +53,7 @@ func remove_station(station):
 		stations.remove_at(index)
 		station.disconnect_line(self)
 		recalculate_path()
+		queue_redraw()
 		return true
 	return false
 

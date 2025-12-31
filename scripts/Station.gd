@@ -38,9 +38,6 @@ func _process(delta):
 		overcrowd_timer += delta
 		if overcrowd_timer >= max_overcrowd_time:
 			emit_signal("game_over")
-	
-	# 其他更新逻辑
-	queue_redraw()
 
 func _draw():
 	# 绘制车站形状
@@ -64,6 +61,7 @@ func add_passenger(passenger_type: int):
 	if passengers.size() < passenger_capacity:
 		passengers.append(passenger_type)
 		check_overcrowding()
+		queue_redraw()
 		return true
 	else:
 		check_overcrowding()
@@ -75,6 +73,7 @@ func remove_passenger(passenger_type: int):
 		if passengers[i] == passenger_type:
 			passengers.remove_at(i)
 			check_overcrowding()
+			queue_redraw()
 			return true
 	return false
 
@@ -104,7 +103,9 @@ func disconnect_line(line):
 # 高亮显示车站
 func highlight():
 	is_highlighted = true
+	queue_redraw()
 
 # 取消高亮
 func unhighlight():
 	is_highlighted = false 
+	queue_redraw()
